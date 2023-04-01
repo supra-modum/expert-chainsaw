@@ -33,11 +33,17 @@ func main() {
 		api.POST("/users", func(c *gin.Context) {
 			user.CreateUser(c, db)
 		})
-		api.DELETE("/users/:id", func(c *gin.Context) {
-			user.DeleteUser(c, db)
+		api.POST("/login", func(c *gin.Context) {
+			user.LoginUser(c, db)
 		})
 		api.PUT("/users/:id", func(c *gin.Context) {
 			user.UpdateUser(c, db)
+		})
+		api.DELETE("/users/:id", func(c *gin.Context) {
+			user.DeleteUser(c, db)
+		})
+		api.DELETE("/users", func(c *gin.Context) {
+			user.DeleteAllUsers(c, db)
 		})
 	}
 
