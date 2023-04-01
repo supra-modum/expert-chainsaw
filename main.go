@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"goproject/user"
+	"expert-chainsaw/user"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"

@@ -1,4 +1,4 @@
-module goproject
+module expert-chainsaw
 
 go 1.20
 
