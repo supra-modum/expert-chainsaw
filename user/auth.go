@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var jwtSecret string = os.Getenv("JWT_SECRET")
+var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 type Claims struct {
 	Email string `json:"email"`

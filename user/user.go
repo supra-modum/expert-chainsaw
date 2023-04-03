@@ -10,10 +10,10 @@ import (
 
 type User struct {
 	gorm.Model
-	ID       uint   `gorm:"primaryKey"`
-	Name     string `gorm:"size:255"`
-	Email    string `gorm:"size:255;unique"`
-	Password string `gorm:"size:255"`
+	ID       uint   `gorm:"primaryKey;column:id"`
+	Name     string `gorm:"size:255;column:name"`
+	Email    string `gorm:"size:255;unique;column:email"`
+	Password string `gorm:"size:255;column:password"`
 }
 
 func GetUsers(c *gin.Context, db *gorm.DB) {
@@ -96,15 +96,4 @@ func UpdateUser(c *gin.Context, db *gorm.DB) {
 func CheckPassword(hashedPassword, plainPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
 	return err == nil
-}
-
-func DeleteAllUsers(c *gin.Context, db *gorm.DB) {
-	var users []User
-
-	if result := db.Unscoped().Delete(&users); result.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": result.Error.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "All users deleted"})
 }

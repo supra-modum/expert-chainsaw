@@ -2,11 +2,11 @@ package main
 
 import (
 	"database/sql"
+	secret "expert-chainsaw/tools"
+	"expert-chainsaw/user"
 	"fmt"
 	"log"
 	"os"
-
-	"expert-chainsaw/user"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -15,7 +15,15 @@ import (
 	"gorm.io/gorm"
 )
 
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+}
+
 func main() {
+	secret.EnsureJwtSecret()
+
 	db, err := connectDB()
 	if err != nil {
 		log.Fatalf("Failed to connect to the database: %v", err)
@@ -42,18 +50,9 @@ func main() {
 		api.DELETE("/users/:id", func(c *gin.Context) {
 			user.DeleteUser(c, db)
 		})
-		api.DELETE("/users", func(c *gin.Context) {
-			user.DeleteAllUsers(c, db)
-		})
 	}
 
 	router.Run(":8080")
-}
-
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
-	}
 }
 
 func connectDB() (*gorm.DB, error) {
