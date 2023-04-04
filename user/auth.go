@@ -5,6 +5,9 @@ import (
 	"os"
 	"time"
 
+	"expert-chainsaw/models"
+	"expert-chainsaw/validation"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/gorm"
@@ -44,13 +47,13 @@ func LoginUser(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	var user User
+	var user models.User
 	if err := db.Where("email = ?", loginCredentials.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
-	if !CheckPassword(user.Password, loginCredentials.Password) {
+	if !validation.CheckPassword(user.Password, loginCredentials.Password) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}

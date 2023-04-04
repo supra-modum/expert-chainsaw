@@ -1,6 +1,7 @@
-package user
+package handlers
 
 import (
+	"expert-chainsaw/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,22 +9,14 @@ import (
 	"gorm.io/gorm"
 )
 
-type User struct {
-	gorm.Model
-	ID       uint   `gorm:"primaryKey;column:id"`
-	Name     string `gorm:"size:255;column:name"`
-	Email    string `gorm:"size:255;unique;column:email"`
-	Password string `gorm:"size:255;column:password"`
-}
-
 func GetUsers(c *gin.Context, db *gorm.DB) {
-	var users []User
+	var users []models.User
 	db.Find(&users)
 	c.JSON(200, users)
 }
 
 func CreateUser(c *gin.Context, db *gorm.DB) {
-	var user User
+	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -50,7 +43,7 @@ func CreateUser(c *gin.Context, db *gorm.DB) {
 }
 
 func DeleteUser(c *gin.Context, db *gorm.DB) {
-	var user User
+	var user models.User
 	id := c.Param("id")
 
 	if err := db.First(&user, id).Error; err != nil {
@@ -67,7 +60,7 @@ func DeleteUser(c *gin.Context, db *gorm.DB) {
 }
 
 func UpdateUser(c *gin.Context, db *gorm.DB) {
-	var user User
+	var user models.User
 	id := c.Param("id")
 
 	if err := db.First(&user, id).Error; err != nil {
@@ -75,7 +68,7 @@ func UpdateUser(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	var updatedUser User
+	var updatedUser models.User
 	if err := c.ShouldBindJSON(&updatedUser); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -91,9 +84,4 @@ func UpdateUser(c *gin.Context, db *gorm.DB) {
 	}
 
 	c.JSON(http.StatusOK, user)
-}
-
-func CheckPassword(hashedPassword, plainPassword string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
-	return err == nil
 }

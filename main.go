@@ -2,11 +2,16 @@ package main
 
 import (
 	"database/sql"
+	"expert-chainsaw/models"
 	secret "expert-chainsaw/tools"
 	"expert-chainsaw/user"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"strconv"
+
+	"expert-chainsaw/handlers"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -34,21 +39,58 @@ func main() {
 	router := gin.Default()
 
 	api := router.Group("/api")
+
 	{
+		// User routes
 		api.GET("/users", func(c *gin.Context) {
-			user.GetUsers(c, db)
+			handlers.GetUsers(c, db)
 		})
 		api.POST("/users", func(c *gin.Context) {
-			user.CreateUser(c, db)
+			handlers.CreateUser(c, db)
+		})
+		api.PUT("/users/:id", func(c *gin.Context) {
+			handlers.UpdateUser(c, db)
 		})
 		api.POST("/login", func(c *gin.Context) {
 			user.LoginUser(c, db)
 		})
-		api.PUT("/users/:id", func(c *gin.Context) {
-			user.UpdateUser(c, db)
-		})
 		api.DELETE("/users/:id", func(c *gin.Context) {
-			user.DeleteUser(c, db)
+			handlers.DeleteUser(c, db)
+		})
+
+		// Fundraising routes
+		api.GET("/fundraisings", func(c *gin.Context) {
+			handlers.GetAllFundraisings(c, db)
+		})
+		api.POST("/fundraisings", func(c *gin.Context) {
+			handlers.CreateFundraising(c, db)
+		})
+		api.PUT("/fundraisings/:id", func(c *gin.Context) {
+			id, err := strconv.Atoi(c.Param("id"))
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+				return
+			}
+			handlers.UpdateFundraising(c, db, uint(id))
+		})
+		api.DELETE("/fundraisings/:id", func(c *gin.Context) {
+			id, err := strconv.Atoi(c.Param("id"))
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+				return
+			}
+			handlers.DeleteFundraising(c, db, uint(id))
+		})
+
+		// User donation routes
+		api.GET("/users/:user_id/donations", func(c *gin.Context) {
+			handlers.GetUserDonations(c, db)
+		})
+		api.PUT("/donations/:id", func(c *gin.Context) {
+			handlers.UpdateDonation(c, db)
+		})
+		api.POST("/donations", func(c *gin.Context) {
+			handlers.AddDonation(c, db)
 		})
 	}
 
@@ -69,9 +111,14 @@ func connectDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&user.User{})
-
+	// Migrate the schema
+	migrate(db)
 	return db, nil
+}
+
+func migrate(db *gorm.DB) {
+	db.AutoMigrate(&models.User{}, &models.Fundraising{}, &models.Donation{})
+
 }
 
 func checkConnection() {
